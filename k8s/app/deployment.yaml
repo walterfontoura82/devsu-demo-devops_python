@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: django-app
+  namespace: devsu-demo
+  labels:
+    app: django-app
+
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: django-app
+
+  template:
+    metadata:
+      labels:
+        app: django-app
+
+    spec:
+      containers:
+        - name: django-app
+
+          image: ghcr.io/walterfontoura82/devsu-demo-devops_python:latest
+
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - containerPort: 8000
+
+          envFrom:
+            - secretRef:
+                name: django-secret
+
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+
+          readinessProbe:
+            httpGet:
+              path: /api/
+              port: 8000
+              httpHeaders:
+                - name: Host
+                  value: localhost
+            initialDelaySeconds: 10
+            periodSeconds: 5
+
+          livenessProbe:
+            httpGet:
+              path: /api/
+              port: 8000
+              httpHeaders:
+                - name: Host
+                  value: localhost
+            initialDelaySeconds: 15
+            periodSeconds: 10

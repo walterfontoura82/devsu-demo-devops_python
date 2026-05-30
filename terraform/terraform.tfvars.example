@@ -1,0 +1,11 @@
+django_secret_key    = "change-me"
+django_debug         = "False"
+django_allowed_hosts = "devsu-demo.local,localhost,127.0.0.1"
+database_name        = "db.sqlite3"
+
+image_repository = "ghcr.io/walterfontoura82/devsu-demo-devops_python"
+image_tag        = "latest"
+
+# Optional examples:
+# kubeconfig_path    = "~/.kube/config"
+# kubeconfig_context = "minikube"

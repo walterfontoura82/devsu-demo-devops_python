@@ -1,0 +1,11 @@
+.git
+venv
+__pycache__
+.pytest_cache
+coverage
+htmlcov
+.env
+**/.terraform
+**/.terraform.lock.hcl
+terraform.tfstate*
+terraform/terraform.tfvars

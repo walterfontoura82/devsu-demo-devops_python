@@ -1,0 +1,155 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      deploy_kubernetes:
+        description: "Deploy to Kubernetes using Terraform and KUBE_CONFIG_B64"
+        required: false
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
+
+permissions:
+  contents: read
+  packages: write
+  security-events: write
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  PYTHON_VERSION: "3.12"
+  TERRAFORM_VERSION: "1.8.5"
+
+jobs:
+  build-test-analyze:
+    name: Build, test and analyze
+    runs-on: ubuntu-latest
+    outputs:
+      image: ${{ steps.image.outputs.image }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install coverage flake8
+
+      - name: Run static code analysis
+        run: |
+          flake8 . --exclude=migrations,__pycache__,.terraform --max-line-length=120
+
+      - name: Run tests with coverage
+        env:
+          DJANGO_SECRET_KEY: github-actions-secret
+          DJANGO_DEBUG: "False"
+          DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1
+          DATABASE_NAME: db.sqlite3
+        run: |
+          coverage run manage.py test
+          coverage report
+          coverage xml
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.xml
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - name: Check Terraform formatting
+        run: terraform -chdir=terraform fmt -check -recursive
+
+      - name: Validate Terraform
+        run: |
+          terraform -chdir=terraform init -backend=false
+          terraform -chdir=terraform validate
+
+      - name: Run vulnerability scan
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: "0"
+
+      - name: Set image name
+        id: image
+        run: |
+          echo "image=${REGISTRY}/${IMAGE_NAME,,}" >> "$GITHUB_OUTPUT"
+
+      - name: Login to GitHub Container Registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Docker image for pull request
+        if: github.event_name == 'pull_request'
+        run: docker build -t ${{ steps.image.outputs.image }}:${{ github.sha }} .
+
+      - name: Build and push Docker image
+        if: github.event_name != 'pull_request'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ steps.image.outputs.image }}:${{ github.sha }}
+            ${{ steps.image.outputs.image }}:latest
+
+  deploy-kubernetes:
+    name: Deploy Kubernetes with Terraform
+    needs: build-test-analyze
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && inputs.deploy_kubernetes == 'true'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p "$HOME/.kube"
+          echo "${{ secrets.KUBE_CONFIG_B64 }}" | base64 -d > "$HOME/.kube/config"
+          chmod 600 "$HOME/.kube/config"
+
+      - name: Terraform apply
+        env:
+          TF_VAR_django_secret_key: ${{ secrets.DJANGO_SECRET_KEY }}
+          TF_VAR_image_repository: ${{ needs.build-test-analyze.outputs.image }}
+          TF_VAR_image_tag: ${{ github.sha }}
+          TF_VAR_kubeconfig_path: ${{ github.workspace }}/.kube/config
+        run: |
+          mkdir -p "${{ github.workspace }}/.kube"
+          cp "$HOME/.kube/config" "${{ github.workspace }}/.kube/config"
+          terraform -chdir=terraform init
+          terraform -chdir=terraform apply -auto-approve

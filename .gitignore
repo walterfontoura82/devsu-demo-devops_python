@@ -1,0 +1,17 @@
+*.log
+*.pot
+*.pyc
+__pycache__/
+
+.env
+.coverage
+htmlcov/
+coverage.xml
+db.sqlite3
+*.tar
+
+.terraform/
+*.tfstate
+*.tfstate.*
+terraform.tfvars
+crash.log
