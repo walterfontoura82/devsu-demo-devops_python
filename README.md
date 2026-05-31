@@ -268,6 +268,20 @@ ingress_host = "devsu-demo.local"
 - Definir politicas de despliegue progresivo, rollback y versionado de imagenes por SHA.
 - Mantener GHCR publico o configurar `imagePullSecret` si la imagen queda privada.
 
+## Evidencia de Ejecucion
+
+La validacion local del despliegue se realizo sobre MicroK8s usando Terraform con el provider `hashicorp/kubernetes`.
+
+Evidencias incluidas:
+
+- `docs/evidence/pipeline.md`: ejecuciones exitosas del pipeline en GitHub Actions.
+- `docs/evidence/kubernetes-resources.txt`: recursos creados en Kubernetes.
+- `docs/evidence/terraform-output.txt`: outputs generados por Terraform.
+- `docs/evidence/deployed-image.txt`: imagen desplegada en el Deployment.
+- `docs/evidence/endpoint-tests.txt`: pruebas del endpoint `/api/` y `/api/users/`.
+
+El endpoint fue validado localmente mediante Ingress de MicroK8s con el host `devsu-demo-tf.local`.
+
 ## Pendientes o Limitaciones
 
 El despliegue publico del endpoint depende de contar con un cluster accesible desde internet y DNS/TLS. Para una entrega local, se documenta el acceso por Minikube o Docker Desktop y se provee el pipeline publico de GitHub Actions como evidencia de ejecucion.
