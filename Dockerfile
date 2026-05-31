@@ -25,4 +25,5 @@ EXPOSE 8000
 
 HEALTHCHECK CMD curl --fail http://localhost:8000/api/ || exit 1
 
-CMD ["gunicorn", "demo.wsgi:application", "--bind", "0.0.0.0:8000"]
+#CMD ["gunicorn", "demo.wsgi:application", "--bind", "0.0.0.0:8000"]
+CMD ["sh", "-c", "python manage.py migrate --noinput && gunicorn demo.wsgi:application --bind 0.0.0.0:8000"]
