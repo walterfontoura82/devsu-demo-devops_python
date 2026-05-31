@@ -308,4 +308,4 @@ El endpoint fue validado localmente mediante Ingress de MicroK8s con el host `de
 
 ## Pendientes o Limitaciones
 
-El despliegue publico del endpoint depende de contar con un cluster accesible desde internet y DNS/TLS. Para una entrega local, se documenta el acceso por Minikube o Docker Desktop y se provee el pipeline publico de GitHub Actions como evidencia de ejecucion.
+El despliegue publico del endpoint depende de contar con un cluster accesible desde internet y DNS/TLS. Para una entrega local, se documenta el acceso por MicroK8s, Minikube o Docker Desktop y se provee el pipeline publico de GitHub Actions como evidencia de ejecucion.
