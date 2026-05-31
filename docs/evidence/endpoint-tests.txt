@@ -1,0 +1,4 @@
+]633;E;echo '$ curl -H "Host: devsu-demo-tf.local" http://127.0.0.1/api/';3f4c4a99-96c8-4d09-bf82-526bafcb138a]633;C$ curl -H "Host: devsu-demo-tf.local" http://127.0.0.1/api/
+{"users":"http://devsu-demo-tf.local/api/users/"}
+$ curl -H "Host: devsu-demo-tf.local" http://127.0.0.1/api/users/
+[]

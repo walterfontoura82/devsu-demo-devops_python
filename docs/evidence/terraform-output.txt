@@ -1,0 +1,3 @@
+application_image = "ghcr.io/walterfontoura82/devsu-demo-devops_python:fdd5b26a3e3467cbdba411e31ccd4b31de0ddad7"
+ingress_host = "devsu-demo-tf.local"
+namespace = "devsu-demo-tf"
