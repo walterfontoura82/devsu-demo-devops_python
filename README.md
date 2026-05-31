@@ -19,6 +19,30 @@ La entrega incluye:
 - Deployment con dos replicas, requests/limits, probes e HPA.
 - Documentacion de ejecucion local, Docker, Kubernetes, Terraform y Git.
 
+## Checklist de Requerimientos
+
+- [x] Repositorio publico en GitHub.
+- [x] Aplicacion base Python versionada.
+- [x] Dockerizacion de la aplicacion.
+- [x] Usuario no root en la imagen.
+- [x] Healthcheck de contenedor.
+- [x] Ejecucion con Gunicorn.
+- [x] Pipeline CI/CD como codigo.
+- [x] Analisis estatico con Flake8.
+- [x] Tests unitarios.
+- [x] Coverage report.
+- [x] Build de imagen Docker.
+- [x] Push de imagen a GitHub Container Registry.
+- [x] Escaneo de vulnerabilidades con Trivy.
+- [x] Despliegue Kubernetes con dos replicas.
+- [x] HorizontalPodAutoscaler.
+- [x] Secret para configuracion sensible.
+- [x] Ingress.
+- [x] Deploy manual desde pipeline usando Terraform.
+- [x] Terraform como IaC sobre Kubernetes.
+- [x] Evidencias de pipeline, Terraform, Kubernetes y endpoint en `docs/evidence/`.
+- [ ] Endpoint publico en internet. No se incluye por usar MicroK8s local; la limitacion queda documentada.
+
 ## Arquitectura
 
 ```mermaid
